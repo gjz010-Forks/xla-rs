@@ -93,22 +93,26 @@ impl Header {
             header.trim_matches(|c: char| c == '{' || c == '}' || c == ',' || c.is_whitespace());
 
         let mut parts: Vec<String> = vec![];
-        let mut start_index = 0usize;
         let mut cnt_parenthesis = 0i64;
-        for (index, c) in header.chars().enumerate() {
+        let mut current_part = String::new();
+        for c in header.chars() {
+            let mut skip = false;
             match c {
                 '(' => cnt_parenthesis += 1,
                 ')' => cnt_parenthesis -= 1,
                 ',' => {
                     if cnt_parenthesis == 0 {
-                        parts.push(header[start_index..index].to_owned());
-                        start_index = index + 1;
+                        parts.push(core::mem::take(&mut current_part));
+                        skip = true;
                     }
                 }
                 _ => {}
             }
+            if !skip {
+                current_part.push(c);
+            }
         }
-        parts.push(header[start_index..].to_owned());
+        parts.push(current_part);
         let mut part_map: HashMap<String, String> = HashMap::new();
         for part in parts.iter() {
             let part = part.trim();
