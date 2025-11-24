@@ -1,0 +1,29 @@
+on: [push, pull_request]
+
+name: Continuous integration (Nix)
+
+
+jobs:
+  check:
+    name: Check
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@v16
+
+      - name: Setup Magic Nix Cache
+        uses: DeterminateSystems/magic-nix-cache-action@v8
+
+      - name: Build
+        run: nix develop --impure --command cargo build --release --all-features
+
+      - name: Test
+        run: nix develop --impure --command cargo test --release --all-features
